@@ -156,11 +156,35 @@ public class HelloController implements Initializable {
             }
         });
 
-        col_new.setCellFactory(param -> new TableCell<Client, Void>() {
+               col_new.setCellFactory(param -> new TableCell<Client, Void>() {
             private final Button newButton = new Button("add credit");
 
             {
-                // remove setOnAction methods
+                newButton.setOnAction(event -> {
+
+                    try {
+                        Client client = getTableRow().getItem();
+                        
+
+                        // Load the FXML file for the new interface
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("addCredit.fxml"));
+                        Parent root = loader.load();
+                        // Get the controller associated with the new FXML file
+                        addCredit controller = loader.getController();
+
+                        // Set the selected client data as properties of the controller
+                        controller.setSelecetdClientName(client.getNom(), client.getTelepehone());
+                        // Create a new stage to display the new interface
+                        Stage stage = new Stage();
+                        stage.setScene(new Scene(root));
+                        stage.setTitle("Hello E-salaf");
+
+                        // Show the new interface
+                        stage.show();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
 
             @Override
