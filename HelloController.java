@@ -57,6 +57,54 @@ public class HelloController implements Initializable {
 
     @FXML
     private TableColumn<Client, Void> col_check;
+    
+    private void editClient(Client client) {
+        // Create a new dialog box to edit the client details
+        Dialog<Client> dialog = new Dialog<>();
+        dialog.setTitle("Edit Client");
+
+        // Set the button types for the dialog box
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        // Create a form with text fields for the client details
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField nom = new TextField(client.getNom());
+        TextField tele = new TextField(client.getTelepehone());
+
+        gridPane.add(new Label("Nom:"), 0, 0);
+        gridPane.add(nom, 1, 0);
+        gridPane.add(new Label("Téléphone:"), 0, 1);
+        gridPane.add(tele, 1, 1);
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        // Set the result converter for the dialog box
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                return new Client(client.getId_client(), nom.getText(), tele.getText());
+            }
+            return null;
+        });
+
+        // Show the dialog box and wait for the user to close it
+        Optional<Client> result = dialog.showAndWait();
+
+        // If the user clicked save, update the client details in the database and refresh the table
+        result.ifPresent(updatedClient -> {
+            try {
+                ClientDAO clidao = new ClientDAO();
+                clidao.update(updatedClient);
+                UpdateTable();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 
     @FXML
     protected void onSaveButtonClick(){
@@ -124,28 +172,26 @@ public class HelloController implements Initializable {
             return cell;
         });
 
-        col_update.setCellFactory(param -> new TableCell<Client, Void>() {
+               col_update.setCellFactory(param -> new TableCell<Client, Void>() {
             private final Button updateButton = new Button("Update");
 
+
             {
-                updateButton.setOnAction(updateEvent -> {
+                updateButton.setOnAction(event -> {
+                    Client client = getTableRow().getItem();
 
-                    // Change the button text to "Save"
-                    updateButton.setText("Save");
+                    if (client != null) {
 
-                    // Get the selected client object from the table
-
-
-
-
+                        editClient(client);
+                    }
 
                 });
-
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
+
                 if (empty) {
                     setGraphic(null);
                 } else {
@@ -154,7 +200,7 @@ public class HelloController implements Initializable {
                     setGraphic(hbox);
                 }
             }
-        });
+        })
 
                col_new.setCellFactory(param -> new TableCell<Client, Void>() {
             private final Button newButton = new Button("add credit");
